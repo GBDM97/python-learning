@@ -1,3 +1,8 @@
+dishes = [["Salad","Tomato","Cucumber","Salad","Sauce"], 
+ ["Pizza","Tomato","Sausage","Sauce","Dough"], 
+ ["Quesadilla","Chicken","Cheese","Sauce"], 
+ ["Sandwich","Salad","Bread","Tomato","Cheese"]]
+
 def solution(dishes):
     groups = {}
     for d, *v in dishes:
@@ -8,3 +13,5 @@ def solution(dishes):
         if len(groups[x]) >= 2:
             ans.append([x] + sorted(groups[x]))
     return ans
+
+print(solution(dishes))
