@@ -1,0 +1,24 @@
+Software Engineer, Systems Responsibilities
+Research, design, develop, build and test operating systems-level software, compilers, and network distribution software for large distributed components that run applications
+Build new features and improve existing products
+Work on problems of moderate scope
+Push code, drive the development of the systems behind our products, create web applications that reach billions of people, build high volume servers, and be a part of a team to connect people around the globe
+Develop a strong understanding of relevant product area, codebase, and/or systems
+Demonstrate proficiency in data analysis, programming and software engineering
+Produce high quality code with good test coverage, using modern abstractions and frameworks
+Receive general instructions on routine work and detailed instructions on new projects or assignments, work independently, use available resources to get unblocked, and complete tasks on-schedule by exercising strong judgment and problem solving skills
+Master internal development standards from developing to releasing code in order to take on tasks and projects with increasing levels of complexity
+Actively seek and give feedback in alignment with company Performance Philosophy
+Telecommute from anywhere in the U.S. permitted (remote work benefit)
+Minimum Qualifications
+Requires a Bachelor’s degree in Computer Science, Computer Software, Computer Engineering, Applied Sciences, Mathematics, Physics, or related field. Requires completion of a university-level course/research project/internship/thesis, or 6 months of experience in each of the following:
+Coding in one of the following industry-standard languages: C, C++, Java, or C#
+Python, PHP, or Haskell
+Relational databases and SQL
+Software development tools: Code editors (VIM or Emacs), and revision control systems (Subversion, GIT, or Perforce)
+Linux, UNIX, or other *nix-like OS as evidenced by file manipulation, advanced commands, and shell scripting
+Core web technologies: HTML, CSS, or JavaScript
+Build highly-scalable performant solutions
+Data processing, programming languages, databases, networking, operating systems, computer graphics, or human-computer interaction
+Applying algorithms and core computer science concepts to real world systems as evidenced by recognizing and matching patterns from different areas of computer science in production systems
+Distributed systems
