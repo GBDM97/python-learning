@@ -53,7 +53,25 @@ def fimatheChannel(dayInitIndex):
         firstRefChannel = currentChannel
     else:
         firstRefChannel = bestChannelFound
-    return firstRefChannel
+    #adapt channel for operations use
+    #while a abertura e fechamento estiver dentro do canal roda, mudando os valores de abertura e fechamento
+    reversedCdsData = cdsData[::-1]
+    i = 0
+    currentClose = cdsData[i]
+    currentOpen = cdsData[i+3]
+    while currentOpen < firstRefChannel[0] and currentOpen > firstRefChannel[1] and currentClose < firstRefChannel[0] and currentClose > firstRefChannel[1]:
+        i = i + 4
+        if i+3 > 16:
+            print("Primeiro canal de ref não encontrado para o dia: "+ dataArray[dayInitIndex][0])
+            break
+        currentClose = cdsData[i]
+        currentOpen = cdsData[i+3]
+    if currentOpen < firstRefChannel[1] or currentClose < firstRefChannel[1]:
+        firstRefChannel[1] = firstRefChannel[1]-firstRefChannel[2]
+        return firstRefChannel
+    if currentOpen > firstRefChannel[0] or currentClose > firstRefChannel[0]:
+        firstRefChannel[0] = firstRefChannel[0]+firstRefChannel[2]
+        return firstRefChannel
 
 def getDay():
     global currentDate
@@ -62,7 +80,7 @@ def getDay():
             currentDate = data[0]
             return index
 
-print(fimatheChannel(98101))
+print(fimatheChannel(64197))
 
     #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
     #com a maior proximidade de averageChannel
