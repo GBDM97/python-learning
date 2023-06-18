@@ -33,10 +33,23 @@ def fimatheChannel(dayInitIndex):
                 bestChannelFound = sorted([firstComparedElement, secondComparedElement], reverse=True)
                 bestChannelFound.append(bestChannelFound[0]-bestChannelFound[1])
     #finding the first reference channel:
+    firstRefChannel = None
     closeOfCd4 = dataArray[dayInitIndex+3][5]
-    
-
-    print(cdsData)
+    if closeOfCd4 > bestChannelFound[0]:
+        currentChannel = bestChannelFound
+        while closeOfCd4 > currentChannel[0]:
+            currentChannel[0] = currentChannel[0]+currentChannel[2]
+            currentChannel[1] = currentChannel[1]+currentChannel[2]
+        firstRefChannel = currentChannel
+    if closeOfCd4 < bestChannelFound[1]:
+        currentChannel = bestChannelFound
+        while closeOfCd4 < currentChannel[1]:
+            currentChannel[0] = currentChannel[0]-currentChannel[2]
+            currentChannel[1] = currentChannel[1]-currentChannel[2]
+        firstRefChannel = currentChannel
+    else:
+        firstRefChannel = bestChannelFound
+    return firstRefChannel
 
 def getDay():
     global currentDate
@@ -45,12 +58,7 @@ def getDay():
             currentDate = data[0]
             return index
 
-def operator():
-    fimatheChannel(getDay())
-    fimatheChannel(getDay())
-
-
-operator()
+print(fimatheChannel(getDay()))
 
     #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
     #com a maior proximidade de averageChannel
