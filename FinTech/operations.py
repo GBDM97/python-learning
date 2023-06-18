@@ -61,8 +61,8 @@ def fimatheChannel(dayInitIndex):
     while currentOpen <= firstRefChannel[0] and currentOpen >= firstRefChannel[1] and currentClose <= firstRefChannel[0] and currentClose >= firstRefChannel[1]:
         i = i + 4
         if i+3 > 16:
-            print("Primeiro canal de ref não encontrado para o dia: "+ dataArray[dayInitIndex][0])
-            break
+            print("First reference channel not found for the date: "+ dataArray[dayInitIndex][0])
+            return
         currentClose = int(reversedCdsData[i])
         currentOpen = int(reversedCdsData[i+3])
     if currentOpen < firstRefChannel[1] or currentClose < firstRefChannel[1]:
