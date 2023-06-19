@@ -5,12 +5,14 @@ cdir = os.getcwd()
 file_path = cdir + "\FinTech\HK50M1_10_01_2023.txt"
 currentDate = ""
 dataArray = []
+dayInitIndex = None
 with open(file_path, "r") as file:
     for line in enumerate(file):
         dataArray.append(line[1].replace('"','').split())
 
-def fimatheChannel(dayInitIndex):
-    
+def initialFimatheChannel(d):
+    global dayInitIndex
+    dayInitIndex = d
     #getting the four cds all values:
     cdsData = [dataArray[dayInitIndex][2],dataArray[dayInitIndex][3],dataArray[dayInitIndex][4],
     dataArray[dayInitIndex][5],
@@ -20,7 +22,6 @@ def fimatheChannel(dayInitIndex):
     dataArray[dayInitIndex+2][5],
     dataArray[dayInitIndex+3][2],dataArray[dayInitIndex+3][3],dataArray[dayInitIndex+3][4],
     dataArray[dayInitIndex+3][5]]
-
     #finding refs and size of the best channel:
     bestChannelFound = None
     averageChannel = 30
@@ -79,7 +80,60 @@ def getDay():
             currentDate = data[0]
             return index
 
-print(fimatheChannel(34478))
+def operate(firstRefChannel):
+
+    #Apply security Extension
+    def applySecurityExtension(firstRefChannel):
+        securityExtension = 1
+        if firstRefChannel is None:
+            return
+        firstRefChannel = [
+            firstRefChannel[0]+(securityExtension*firstRefChannel[2]),
+            firstRefChannel[1]-(securityExtension*firstRefChannel[2]), 
+            firstRefChannel[2]
+        ]
+        currentRefChannel = firstRefChannel
+        currentRefChannel.append("Extended")
+        return currentRefChannel
+
+    #search for operation opportunity:
+    def searchOpr(currentCdIndex, currentRefChannel):
+        operationRequest = []
+        spread = 10
+        while int(dataArray[currentCdIndex][5]) <= currentRefChannel[0] and int(dataArray[currentCdIndex][5]) >= currentRefChannel[1]:
+            currentCdIndex = currentCdIndex+1
+        if int(dataArray[currentCdIndex][5]) > currentRefChannel[0]:
+            return ['Buy', currentCdIndex, int(dataArray[currentCdIndex][5])+spread,
+            currentRefChannel[0]-round(currentRefChannel[2]*2,25),currentRefChannel]
+        elif int(dataArray[currentCdIndex][5]) < currentRefChannel[1]:
+            return ['Sell', currentCdIndex, int(dataArray[currentCdIndex][5])-spread,
+            currentRefChannel[1]+round(currentRefChannel[2]*2,25),currentRefChannel]
+        #operation request information: buy or sell, current cd index, entry price, stop, current ref channel
+
+    def startOperations(operationRequest):
+        def decide():
+            print("decide function executed")
+        side = operationRequest[0]
+        currentCdIndex = operationRequest[1]
+        entryPrice = operationRequest[2]
+        stop = operationRequest[3]
+        takeProfit = 0
+
+        if side == "Buy":
+            while dataArray[currentCdIndex][5] > stop and dataArray[currentCdIndex][5] < takeProfit:
+                currentCdIndex = currentCdIndex+1
+            
+        if side == "Sell":
+            while dataArray[currentCdIndex][5] < stop and dataArray[currentCdIndex][5] > takeProfit:
+                currentCdIndex = currentCdIndex+1
+            
+        decide()
+
+    currentCdIndex = dayInitIndex + 4
+    startOperations(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
+
+
+operate(initialFimatheChannel(33519))
 
     #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
     #com a maior proximidade de averageChannel
