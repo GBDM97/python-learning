@@ -111,14 +111,22 @@ def operate(firstRefChannel):
         #operation request information: buy or sell, current cd index, entry price, stop, current ref channel
 
     def startOperations(operationRequest):
-        def decide():
+        def registerAndDecide():
             print("decide function executed")
+        def adaptReferences(req, index):
+            #we need to update channel references and currentCdIndex to build another operation req
+            # in case of another operation, register and decide will be responsible to know
+            # if there will be another operation
+            req[1] = index
+            
+            
         side = operationRequest[0]
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
         stop = operationRequest[3]
         stopPosition = 0
         firstCdAboveLine = False
+        operationResult = None
 
         if side == "Buy":
             while dataArray[currentCdIndex][4] > stop:
@@ -137,6 +145,9 @@ def operate(firstRefChannel):
                     operationRequest[4][0] = operationRequest[4][0]+operationRequest[4][2]
                     operationRequest[4][1] = operationRequest[4][1]+operationRequest[4][2]
                     stop = operationRequest[4][1]-round(0.25*operationRequest[4][2])
+            operationResult = stop - entryPrice
+            if operationResult < 0:
+                adaptReferences(operationRequest, currentCdIndex)
 
         if side == "Sell":
             while dataArray[currentCdIndex][5] < stop:
@@ -144,7 +155,7 @@ def operate(firstRefChannel):
         
         #make a funtion to adapt the ref channel in case of zero to zero or stop loss
             
-        decide()
+        registerAndDecide()
 
     currentCdIndex = dayInitIndex + 4
     startOperations(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
