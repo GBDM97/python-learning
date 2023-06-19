@@ -104,10 +104,10 @@ def operate(firstRefChannel):
             currentCdIndex = currentCdIndex+1
         if int(dataArray[currentCdIndex][5]) > currentRefChannel[0]:
             return ['Buy', currentCdIndex, int(dataArray[currentCdIndex][5])+spread,
-            currentRefChannel[0]-round(currentRefChannel[2]*2,25),currentRefChannel]
+            currentRefChannel[0]-round(currentRefChannel[2]*2.25),currentRefChannel]
         elif int(dataArray[currentCdIndex][5]) < currentRefChannel[1]:
             return ['Sell', currentCdIndex, int(dataArray[currentCdIndex][5])-spread,
-            currentRefChannel[1]+round(currentRefChannel[2]*2,25),currentRefChannel]
+            currentRefChannel[1]+round(currentRefChannel[2]*2.25),currentRefChannel]
         #operation request information: buy or sell, current cd index, entry price, stop, current ref channel
 
     def startOperations(operationRequest):
@@ -117,19 +117,32 @@ def operate(firstRefChannel):
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
         stop = operationRequest[3]
-        noLoss = False #akas zero a zero
+        stopPosition = 0
+        firstCdAboveLine = False
 
         if side == "Buy":
-            while dataArray[currentCdIndex][5] > stop:
+            while dataArray[currentCdIndex][4] > stop:
                 currentCdIndex = currentCdIndex+1
-                if dataArray[currentCdIndex][5] > entryPrice + (operationRequest[4][2]*2) and noLoss == False:
-                    noLoss = True
-                    stop = entryPrice
-                elif dataArray[currentCdIndex[5]] > stop + (operationRequest[4][2]*2):
-            
+                if dataArray[currentCdIndex][5] > entryPrice + (operationRequest[4][2]) and stopPosition == 0:
+                    if firstCdAboveLine == True and dataArray[currentCdIndex][5] > dataArray[currentCdIndex-1][5]:
+                        stopPosition = 1
+                        stop = entryPrice
+                    firstCdAboveLine = True
+                elif dataArray[currentCdIndex][5] > operationRequest[4][0] + (operationRequest[4][2]*2) and stopPosition == 1:
+                    stopPosition = 2
+                    stop = round(0.75*operationRequest[4][2] + operationRequest[4][0])
+                    operationRequest[4] = [operationRequest[4][0]+operationRequest[4][2]*3, operationRequest[4][0]+operationRequest[4][2], operationRequest[4][2]]
+                    #the channel is retracted
+                elif dataArray[currentCdIndex][5] > operationRequest[4][0] and stopPosition == 2:
+                    operationRequest[4][0] = operationRequest[4][0]+operationRequest[4][2]
+                    operationRequest[4][1] = operationRequest[4][1]+operationRequest[4][2]
+                    stop = operationRequest[4][1]-round(0.25*operationRequest[4][2])
+
         if side == "Sell":
             while dataArray[currentCdIndex][5] < stop:
                 currentCdIndex = currentCdIndex+1
+        
+        #make a funtion to adapt the ref channel in case of zero to zero or stop loss
             
         decide()
 
