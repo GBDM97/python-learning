@@ -117,14 +117,18 @@ def operate(firstRefChannel):
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
         stop = operationRequest[3]
-        takeProfit = 0
+        noLoss = False #akas zero a zero
 
         if side == "Buy":
-            while dataArray[currentCdIndex][5] > stop and dataArray[currentCdIndex][5] < takeProfit:
+            while dataArray[currentCdIndex][5] > stop:
                 currentCdIndex = currentCdIndex+1
+                if dataArray[currentCdIndex][5] > entryPrice + (operationRequest[4][2]*2) and noLoss == False:
+                    noLoss = True
+                    stop = entryPrice
+                elif dataArray[currentCdIndex[5]] > stop + (operationRequest[4][2]*2):
             
         if side == "Sell":
-            while dataArray[currentCdIndex][5] < stop and dataArray[currentCdIndex][5] > takeProfit:
+            while dataArray[currentCdIndex][5] < stop:
                 currentCdIndex = currentCdIndex+1
             
         decide()
