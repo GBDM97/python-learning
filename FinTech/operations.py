@@ -113,13 +113,28 @@ def operate(firstRefChannel):
     def startOperations(operationRequest):
         def registerAndDecide():
             print("decide function executed")
-        def adaptReferences(req, index):
+        def updateReferences(req, index, result):
             #we need to update channel references and currentCdIndex to build another operation req
             # in case of another operation, register and decide will be responsible to know
             # if there will be another operation
             req[1] = index
+
+            if dataArray[index][5] > req[4][0]:
+                i = index
+                while dataArray[i][5] > req[4][0]:
+                    req[4][0] = req[4][0]+req[4][2]
+                    req[4][1] = req[4][0]-req[4][2]
+                    i += 1
+                while req[4][0] > dataArray[i][5] and dataArray[i][5] > req[4][1]:
+                    i += 1
+                
+                
+            if req[0] == "Buy":
+
+                req[4][1] = req[4][0]
+                req[4][0] = req[4][1] + 2*req[4][2]
             
-            
+
         side = operationRequest[0]
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
@@ -147,7 +162,7 @@ def operate(firstRefChannel):
                     stop = operationRequest[4][1]-round(0.25*operationRequest[4][2])
             operationResult = stop - entryPrice
             if operationResult < 0:
-                adaptReferences(operationRequest, currentCdIndex)
+                updateReferences(operationRequest, currentCdIndex, operationResult)
 
         if side == "Sell":
             while dataArray[currentCdIndex][5] < stop:
