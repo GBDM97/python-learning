@@ -275,7 +275,9 @@ def selectDaysAndOperate():
             print("Operations on day: "+currentDate+ " finished!")
         while currentDate == dataArray[i][0]:
             i+=1
-            if dataArray[i] is None:
+            try:
+                dataArray[i]
+            except:
                 return allResults
             
     return allResults
