@@ -116,13 +116,13 @@ def operateSpecificDay(firstRefChannel):
         def registerAndDecideDayOperations(req, result):
             global allResults
             global currentDate
-            currResults = allResults[currentDate]
             if currentDate in allResults:
-                newEntry = currResults
+                newEntry = allResults[currentDate]
                 newEntry.append(result)
                 allResults.update({currentDate:newEntry})
             else:
                 allResults.update({currentDate:[result]})
+            currResults = allResults[currentDate]
             
             # we will build another operation req
             # in case there will be another operation
@@ -141,6 +141,7 @@ def operateSpecificDay(firstRefChannel):
             # Next possible daily rules:
             # Operar antes das 8 somente
             # Operar mais ou menos
+            # Depois de um loss e um zero a zero, ou dois zero a zero, opera? 
 
         def updateReferences(req, index):
             def returnValue(i):
@@ -234,7 +235,8 @@ def operateSpecificDay(firstRefChannel):
     startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
 
 
-operateSpecificDay(initialFimatheChannel(getDay(89475)))
+operateSpecificDay(initialFimatheChannel(getDay(67073)))
+print(allResults)
 
     #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
     #com a maior proximidade de averageChannel
