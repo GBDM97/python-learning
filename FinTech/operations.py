@@ -9,7 +9,8 @@ dayInitIndex = None
 with open(file_path, "r") as file:
     for line in enumerate(file):
         dataArray.append(line[1].replace('"','').split())
-currentDate = dataArray[0][0]
+currentDate = None
+currentCdIndex = 0
 
 def initialFimatheChannel(d):
     global dayInitIndex
@@ -74,16 +75,6 @@ def initialFimatheChannel(d):
         firstRefChannel[0] = firstRefChannel[0]+firstRefChannel[2]
         return firstRefChannel
 
-def getDays(daysArray):
-    global currentDate
-    # if offset is None:
-    #     offset = 0
-    # for i in range(offset, len(dataArray)):
-    #     if dataArray[i][0] != currentDate:
-    #         currentDate = dataArray[i][0]
-    #         return i
-    while currentDate is not 
-
 def operateSpecificDay(firstRefChannel):
 
     #Apply security Extension
@@ -133,14 +124,14 @@ def operateSpecificDay(firstRefChannel):
             # Here are the daily rules of operation:
             # Deu o take vaza! :
             if len(currResults) == 1 and currResults[0] > 0:
-                return
+                return currentCdIndex
             # Primeiro stop, ou zero a zero? tenta de novo vai :
             if len(currResults) == 1  and currResults[0] <= 0:
                 updatedReq = updateReferences(req, index)
                 startOperation(searchOpr(updatedReq[1], updatedReq[4]))
             # Duas operações? vaza meo :
             if len(currResults) == 2:
-                return
+                return currentCdIndex
             # Next possible daily rules:
             # Operar antes das 8 somente
             # Operar mais ou menos
@@ -179,6 +170,7 @@ def operateSpecificDay(firstRefChannel):
                 return returnValue(i)
                 
         side = operationRequest[0]
+        global currentCdIndex
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
         stop = operationRequest[3]
@@ -232,13 +224,17 @@ def operateSpecificDay(firstRefChannel):
                     stop = operationRequest[4][0]+round(0.25*operationRequest[4][2])
             operationResult = entryPrice - stop
         registerDayOperation(operationResult)
-        decideDayOperations(operationRequest, currentCdIndex)
+        return decideDayOperations(operationRequest, currentCdIndex)
+        
 
     currentCdIndex = dayInitIndex + 4
-    startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
+    return startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)))
 
 def selectDaysAndOperate():
     # The days are Brazil operation days:
+    
+    global currentDate
+
     SUNDAY = True
     MONDAY = True
     TUESDAY = False
@@ -246,19 +242,39 @@ def selectDaysAndOperate():
     THURSDAY = False
 
     operationDaysArray = []
+    i = 0
+
+    def transformToWeekDay(d):
+        d = d.split(".")
+        # print(d)
+        return datetime.date(int(d[0]), int(d[1]), int(d[2])).strftime("%A")
+    def isDateWeekDayPresent(date, array):
+        try:
+            array.index(transformToWeekDay(date))
+            return True
+        except:
+            return False
 
     if SUNDAY:
-        operationDaysArray.append("sunday")
+        operationDaysArray.append("Monday")
     if MONDAY:
-        operationDaysArray.append("monday")
+        operationDaysArray.append("Tuesday")
     if TUESDAY:
-        operationDaysArray.append("tuesday")
+        operationDaysArray.append("Wednesday")
     if WEDNESDAY:
-        operationDaysArray.append("wednesday")
+        operationDaysArray.append("Thursday")
     if THURSDAY:
-        operationDaysArray.append("thursday")
-    
-    operateSpecificDay(initialFimatheChannel(getDays(operationDaysArray)))
-selectDaysAndOperate()
-print(allResults)
+        operationDaysArray.append("Friday")
+
+    while i < len(dataArray):
+        currentDate = dataArray[i][0]
+        if isDateWeekDayPresent(dataArray[i][0], operationDaysArray):
+            i = operateSpecificDay(initialFimatheChannel(i))
+        while currentDate == dataArray[i][0]:
+            i+=1
+            
+            
+    return allResults
+
+print(selectDaysAndOperate())
 
