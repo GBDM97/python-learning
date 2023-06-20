@@ -113,7 +113,7 @@ def operateSpecificDay(firstRefChannel):
         #operation request information: buy or sell, current cd index, entry price, stop, current ref channel
 
     def startOperation(operationRequest):
-        def registerAndDecideDayOperations(req, result):
+        def registerDayOperation(result):
             global allResults
             global currentDate
             if currentDate in allResults:
@@ -122,8 +122,8 @@ def operateSpecificDay(firstRefChannel):
                 allResults.update({currentDate:newEntry})
             else:
                 allResults.update({currentDate:[result]})
+        def decideDayOperations(req, index):
             currResults = allResults[currentDate]
-            
             # we will build another operation req
             # in case there will be another operation
             
@@ -134,7 +134,8 @@ def operateSpecificDay(firstRefChannel):
                 return
             # Primeiro stop, ou zero a zero? tenta de novo vai :
             if len(currResults) == 1  and currResults[0] <= 0:
-                startOperation(searchOpr(req[1], req[4]))
+                updatedReq = updateReferences(req, index)
+                startOperation(searchOpr(updatedReq[1], updatedReq[4]))
             # Duas operações? vaza meo :
             if len(currResults) == 2:
                 return
@@ -228,8 +229,8 @@ def operateSpecificDay(firstRefChannel):
                     operationRequest[4][0] = operationRequest[4][0]-operationRequest[4][2]
                     stop = operationRequest[4][0]+round(0.25*operationRequest[4][2])
             operationResult = entryPrice - stop
-        
-        registerAndDecideDayOperations(updateReferences(operationRequest, currentCdIndex), operationResult)
+        registerDayOperation(operationResult)
+        decideDayOperations(operationRequest, currentCdIndex)
 
     currentCdIndex = dayInitIndex + 4
     startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
