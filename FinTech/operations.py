@@ -3,13 +3,13 @@ import datetime
 
 cdir = os.getcwd()
 file_path = cdir + "\FinTech\HK50M1_10_01_2023.txt"
-currentDate = ""
 allResults = {}
 dataArray = []
 dayInitIndex = None
 with open(file_path, "r") as file:
     for line in enumerate(file):
         dataArray.append(line[1].replace('"','').split())
+currentDate = dataArray[0][0]
 
 def initialFimatheChannel(d):
     global dayInitIndex
@@ -74,14 +74,15 @@ def initialFimatheChannel(d):
         firstRefChannel[0] = firstRefChannel[0]+firstRefChannel[2]
         return firstRefChannel
 
-def getDay(offset):
+def getDays(daysArray):
     global currentDate
-    if offset is None:
-        offset = 0
-    for i in range(offset, len(dataArray)):
-        if dataArray[i][0] != currentDate:
-            currentDate = dataArray[i][0]
-            return i
+    # if offset is None:
+    #     offset = 0
+    # for i in range(offset, len(dataArray)):
+    #     if dataArray[i][0] != currentDate:
+    #         currentDate = dataArray[i][0]
+    #         return i
+    while currentDate is not 
 
 def operateSpecificDay(firstRefChannel):
 
@@ -122,6 +123,7 @@ def operateSpecificDay(firstRefChannel):
                 allResults.update({currentDate:newEntry})
             else:
                 allResults.update({currentDate:[result]})
+
         def decideDayOperations(req, index):
             currResults = allResults[currentDate]
             # we will build another operation req
@@ -235,9 +237,28 @@ def operateSpecificDay(firstRefChannel):
     currentCdIndex = dayInitIndex + 4
     startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
 
+def selectDaysAndOperate():
+    # The days are Brazil operation days:
+    SUNDAY = True
+    MONDAY = True
+    TUESDAY = False
+    WEDNESDAY = False
+    THURSDAY = False
 
-operateSpecificDay(initialFimatheChannel(getDay(67073)))
+    operationDaysArray = []
+
+    if SUNDAY:
+        operationDaysArray.append("sunday")
+    if MONDAY:
+        operationDaysArray.append("monday")
+    if TUESDAY:
+        operationDaysArray.append("tuesday")
+    if WEDNESDAY:
+        operationDaysArray.append("wednesday")
+    if THURSDAY:
+        operationDaysArray.append("thursday")
+    
+    operateSpecificDay(initialFimatheChannel(getDays(operationDaysArray)))
+selectDaysAndOperate()
 print(allResults)
 
-    #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
-    #com a maior proximidade de averageChannel
