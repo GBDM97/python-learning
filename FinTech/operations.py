@@ -98,7 +98,6 @@ def operate(firstRefChannel):
 
     #search for operation opportunity:
     def searchOpr(currentCdIndex, currentRefChannel):
-        operationRequest = []
         spread = 10
         while int(dataArray[currentCdIndex][5]) <= currentRefChannel[0] and int(dataArray[currentCdIndex][5]) >= currentRefChannel[1]:
             currentCdIndex = currentCdIndex+1
@@ -111,30 +110,39 @@ def operate(firstRefChannel):
         #operation request information: buy or sell, current cd index, entry price, stop, current ref channel
 
     def startOperations(operationRequest):
-        def registerAndDecide():
+        def registerAndDecide(req, result):
             print("decide function executed")
-        def updateReferences(req, index, result):
+        def updateReferences(req, index):
             #we need to update channel references and currentCdIndex to build another operation req
             # in case of another operation, register and decide will be responsible to know
             # if there will be another operation
-            req[1] = index
+            def returnValue(i):
+                if dataArray[i][5] > req[4][0]:
+                    req[4][0] += req[4][2]
+                if dataArray[i][5] < req[4][1]:
+                    req[4][1] -= req[4][2]
+                return req
 
-            if dataArray[index][5] > req[4][0]:
-                i = index
+            req[1] = index
+            i = index
+            if dataArray[i][5] > req[4][0]:
                 while dataArray[i][5] > req[4][0]:
-                    req[4][0] = req[4][0]+req[4][2]
+                    req[4][0] += req[4][2]
                     req[4][1] = req[4][0]-req[4][2]
                     i += 1
                 while req[4][0] > dataArray[i][5] and dataArray[i][5] > req[4][1]:
-                    i += 1
-                
-                
-            if req[0] == "Buy":
+                    i -= 1
+                returnValue(i)
 
-                req[4][1] = req[4][0]
-                req[4][0] = req[4][1] + 2*req[4][2]
-            
-
+            if dataArray[i][5] < req[4][1]:
+                while dataArray[i][5] < req[4][1]:
+                    req[4][1] -= req[4][2]
+                    req[4][0] = req[4][1]+req[4][2]
+                    i+=1
+                while req[4][0] > dataArray[i][5] and dataArray[i][5] > req[4][1]:
+                    i -= 1
+                returnValue(i)
+                
         side = operationRequest[0]
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
@@ -161,8 +169,10 @@ def operate(firstRefChannel):
                     operationRequest[4][1] = operationRequest[4][1]+operationRequest[4][2]
                     stop = operationRequest[4][1]-round(0.25*operationRequest[4][2])
             operationResult = stop - entryPrice
-            if operationResult < 0:
-                updateReferences(operationRequest, currentCdIndex, operationResult)
+            if operationResult <= 0:
+                registerAndDecide(updateReferences(operationRequest, currentCdIndex), operationResult)
+            else:
+                registerAndDecide(operationRequest, operationResult)
 
         if side == "Sell":
             while dataArray[currentCdIndex][5] < stop:
@@ -176,7 +186,7 @@ def operate(firstRefChannel):
     startOperations(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
 
 
-operate(initialFimatheChannel(33519))
+operate(initialFimatheChannel(89475))
 
     #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
     #com a maior proximidade de averageChannel
