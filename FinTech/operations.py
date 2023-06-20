@@ -232,6 +232,13 @@ def operateSpecificDay(firstRefChannel):
             return currentCdIndex
     return startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)))
 
+def getAllResults():
+    output = []
+    for i in allResults.values():
+        for ii in i:
+            output.append(ii)
+    return sum(output)
+
 def selectDaysAndOperate():
     # The days are Brazil operation days:
     
@@ -278,9 +285,9 @@ def selectDaysAndOperate():
             try:
                 dataArray[i]
             except:
-                return allResults.values()
+                return getAllResults()
             
-    return allResults.values()
+    return getAllResults()
 
 print(selectDaysAndOperate())
 
