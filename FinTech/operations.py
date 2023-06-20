@@ -4,6 +4,7 @@ import datetime
 cdir = os.getcwd()
 file_path = cdir + "\FinTech\HK50M1_10_01_2023.txt"
 currentDate = ""
+allResults = {}
 dataArray = []
 dayInitIndex = None
 with open(file_path, "r") as file:
@@ -73,14 +74,16 @@ def initialFimatheChannel(d):
         firstRefChannel[0] = firstRefChannel[0]+firstRefChannel[2]
         return firstRefChannel
 
-def getDay():
+def getDay(offset):
     global currentDate
-    for index, data in enumerate(dataArray):
-        if data[0] != currentDate:
-            currentDate = data[0]
-            return index
+    if offset is None:
+        offset = 0
+    for i in range(offset, len(dataArray)):
+        if dataArray[i][0] != currentDate:
+            currentDate = dataArray[i][0]
+            return i
 
-def operate(firstRefChannel):
+def operateSpecificDay(firstRefChannel):
 
     #Apply security Extension
     def applySecurityExtension(firstRefChannel):
@@ -109,14 +112,37 @@ def operate(firstRefChannel):
             currentRefChannel[1]+round(currentRefChannel[2]*2.25),currentRefChannel]
         #operation request information: buy or sell, current cd index, entry price, stop, current ref channel
 
-    def startOperations(operationRequest):
-        def registerAndDecide(req, result):
-            print(req)
-            print(result)
+    def startOperation(operationRequest):
+        def registerAndDecideDayOperations(req, result):
+            global allResults
+            global currentDate
+            currResults = allResults[currentDate]
+            if currentDate in allResults:
+                newEntry = currResults
+                newEntry.append(result)
+                allResults.update({currentDate:newEntry})
+            else:
+                allResults.update({currentDate:[result]})
+            
+            # we will build another operation req
+            # in case there will be another operation
+            
+            # ===========
+            # Here are the daily rules of operation:
+            # Deu o take vaza! :
+            if len(currResults) == 1 and currResults[0] > 0:
+                return
+            # Primeiro stop, ou zero a zero? tenta de novo vai :
+            if len(currResults) == 1  and currResults[0] <= 0:
+                startOperation(searchOpr(req[1], req[4]))
+            # Duas operações? vaza meo :
+            if len(currResults) == 2:
+                return
+            # Next possible daily rules:
+            # Operar antes das 8 somente
+            # Operar mais ou menos
+
         def updateReferences(req, index):
-            #we need to update channel references and currentCdIndex to build another operation req
-            # in case of another operation, register and decide will be responsible to know
-            # if there will be another operation
             def returnValue(i):
                 while req[4][0] > int(dataArray[i][5]) and int(dataArray[i][5]) > req[4][1]:
                     i -= 1
@@ -153,18 +179,21 @@ def operate(firstRefChannel):
         entryPrice = operationRequest[2]
         stop = operationRequest[3]
         stopPosition = 0
-        firstCdAboveLine = False
+        firstCdPastLine = False
         operationResult = None
+        cdPastLineIndex = None
 
         if side == "Buy":
             while int(dataArray[currentCdIndex][4]) > stop:
                 currentCdIndex = currentCdIndex+1
-                
                 if int(dataArray[currentCdIndex][5]) > entryPrice + (operationRequest[4][2]) and stopPosition == 0:
-                    if firstCdAboveLine == True and int(dataArray[currentCdIndex][5]) > int(dataArray[currentCdIndex-1][5]):
-                        stopPosition = 1
-                        stop = entryPrice
-                    firstCdAboveLine = True
+                    if firstCdPastLine == True:
+                        if int(dataArray[currentCdIndex][5]) > int(dataArray[cdPastLineIndex][5]):
+                            stopPosition = 1
+                            stop = entryPrice
+                    else:
+                        firstCdPastLine = True
+                        cdPastLineIndex = currentCdIndex
                 if int(dataArray[currentCdIndex][5]) > operationRequest[4][0] + (operationRequest[4][2]*2) and stopPosition == 1:
                     stopPosition = 2
                     stop = round(0.75*operationRequest[4][2] + operationRequest[4][0])
@@ -178,34 +207,34 @@ def operate(firstRefChannel):
             
 
         if side == "Sell":
-            while int(dataArray[currentCdIndex][4]) > stop:
+            while int(dataArray[currentCdIndex][4]) < stop:
                 currentCdIndex = currentCdIndex+1
-                
-                if int(dataArray[currentCdIndex][5]) > entryPrice + (operationRequest[4][2]) and stopPosition == 0:
-                    if firstCdAboveLine == True and int(dataArray[currentCdIndex][5]) > int(dataArray[currentCdIndex-1][5]):
-                        stopPosition = 1
-                        stop = entryPrice
-                    firstCdAboveLine = True
-                if int(dataArray[currentCdIndex][5]) > operationRequest[4][0] + (operationRequest[4][2]*2) and stopPosition == 1:
+                if int(dataArray[currentCdIndex][5]) < entryPrice - (operationRequest[4][2]) and stopPosition == 0:
+                    if firstCdPastLine == True:
+                        if int(dataArray[currentCdIndex][5]) < int(dataArray[cdPastLineIndex][5]):
+                            stopPosition = 1
+                            stop = entryPrice
+                    else: 
+                        firstCdPastLine = True
+                        cdPastLineIndex = currentCdIndex
+                if int(dataArray[currentCdIndex][5]) < operationRequest[4][1] - (operationRequest[4][2]*2) and stopPosition == 1:
                     stopPosition = 2
-                    stop = round(0.75*operationRequest[4][2] + operationRequest[4][0])
-                    operationRequest[4] = [operationRequest[4][0]+operationRequest[4][2]*3, operationRequest[4][0]+operationRequest[4][2], operationRequest[4][2]]
+                    stop = round(operationRequest[4][1] - 0.75*operationRequest[4][2])
+                    operationRequest[4] = [operationRequest[4][1]-operationRequest[4][2]*3, operationRequest[4][1]-operationRequest[4][2], operationRequest[4][2]]
                     #the channel is retracted
-                if int(dataArray[currentCdIndex][5]) > operationRequest[4][0] and stopPosition == 2:
-                    operationRequest[4][0] = operationRequest[4][0]+operationRequest[4][2]
-                    operationRequest[4][1] = operationRequest[4][1]+operationRequest[4][2]
-                    stop = operationRequest[4][1]-round(0.25*operationRequest[4][2])
-            operationResult = stop - entryPrice
+                if int(dataArray[currentCdIndex][5]) < operationRequest[4][1] and stopPosition == 2:
+                    operationRequest[4][1] = operationRequest[4][1]-operationRequest[4][2]
+                    operationRequest[4][0] = operationRequest[4][0]-operationRequest[4][2]
+                    stop = operationRequest[4][0]+round(0.25*operationRequest[4][2])
+            operationResult = entryPrice - stop
         
-        
-            
-        registerAndDecide(updateReferences(operationRequest, currentCdIndex), operationResult)
+        registerAndDecideDayOperations(updateReferences(operationRequest, currentCdIndex), operationResult)
 
     currentCdIndex = dayInitIndex + 4
-    startOperations(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
+    startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)) )
 
 
-operate(initialFimatheChannel(89475))
+operateSpecificDay(initialFimatheChannel(getDay(89475)))
 
     #pegar a abertura/max/min/fechamento dos primeiros 4 cds e encontrar os dois niveis de preço que formariam um canal
     #com a maior proximidade de averageChannel
