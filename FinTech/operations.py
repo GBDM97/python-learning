@@ -168,9 +168,9 @@ def operateSpecificDay(firstRefChannel):
                 req[4][0] += req[4][2]
                 req[4][1] = req[4][0]-req[4][2]
                 return returnValue(i)
-                
-        side = operationRequest[0]
+        
         global currentCdIndex
+        side = operationRequest[0]
         currentCdIndex = operationRequest[1]
         entryPrice = operationRequest[2]
         stop = operationRequest[3]
@@ -228,6 +228,8 @@ def operateSpecificDay(firstRefChannel):
         
 
     currentCdIndex = dayInitIndex + 4
+    if firstRefChannel is None:
+            return currentCdIndex
     return startOperation(searchOpr(currentCdIndex, applySecurityExtension(firstRefChannel)))
 
 def selectDaysAndOperate():
