@@ -118,6 +118,8 @@ def operate(firstRefChannel):
             # in case of another operation, register and decide will be responsible to know
             # if there will be another operation
             def returnValue(i):
+                while req[4][0] > int(dataArray[i][5]) and int(dataArray[i][5]) > req[4][1]:
+                    i -= 1
                 if int(dataArray[i][5]) > req[4][0]:
                     req[4][0] += req[4][2]
                 if int(dataArray[i][5]) < req[4][1]:
@@ -129,19 +131,21 @@ def operate(firstRefChannel):
             if int(dataArray[i][5]) > req[4][0]:
                 while int(dataArray[i][5]) > req[4][0]:
                     req[4][0] += req[4][2]
-                    req[4][1] = req[4][0]-req[4][2]
                     i += 1
-                while req[4][0] > int(dataArray[i][5]) and int(dataArray[i][5]) > req[4][1]:
-                    i -= 1
+                req[4][1] = req[4][0]-req[4][2]
                 return returnValue(i)
-
-            if int(dataArray[i][5]) < req[4][1]:
+            elif int(dataArray[i][5]) < req[4][1]:
                 while int(dataArray[i][5]) < req[4][1]:
                     req[4][1] -= req[4][2]
-                    req[4][0] = req[4][1]+req[4][2]
                     i+=1
-                while req[4][0] > int(dataArray[i][5]) and int(dataArray[i][5]) > req[4][1]:
-                    i -= 1
+                req[4][0] = req[4][1]+req[4][2]
+                return returnValue(i)
+            else:
+                while int(dataArray[i][5]) < req[4][0]:
+                    req[4][0] -= req[4][2]
+                    i+=1
+                req[4][0] += req[4][2]
+                req[4][1] = req[4][0]-req[4][2]
                 return returnValue(i)
                 
         side = operationRequest[0]
@@ -155,7 +159,6 @@ def operate(firstRefChannel):
         if side == "Buy":
             while int(dataArray[currentCdIndex][4]) > stop:
                 currentCdIndex = currentCdIndex+1
-                verifyVariableForTesting = dataArray[currentCdIndex]
                 
                 if int(dataArray[currentCdIndex][5]) > entryPrice + (operationRequest[4][2]) and stopPosition == 0:
                     if firstCdAboveLine == True and int(dataArray[currentCdIndex][5]) > int(dataArray[currentCdIndex-1][5]):
@@ -175,8 +178,24 @@ def operate(firstRefChannel):
             
 
         if side == "Sell":
-            while int(dataArray[currentCdIndex][5]) < stop:
+            while int(dataArray[currentCdIndex][4]) > stop:
                 currentCdIndex = currentCdIndex+1
+                
+                if int(dataArray[currentCdIndex][5]) > entryPrice + (operationRequest[4][2]) and stopPosition == 0:
+                    if firstCdAboveLine == True and int(dataArray[currentCdIndex][5]) > int(dataArray[currentCdIndex-1][5]):
+                        stopPosition = 1
+                        stop = entryPrice
+                    firstCdAboveLine = True
+                if int(dataArray[currentCdIndex][5]) > operationRequest[4][0] + (operationRequest[4][2]*2) and stopPosition == 1:
+                    stopPosition = 2
+                    stop = round(0.75*operationRequest[4][2] + operationRequest[4][0])
+                    operationRequest[4] = [operationRequest[4][0]+operationRequest[4][2]*3, operationRequest[4][0]+operationRequest[4][2], operationRequest[4][2]]
+                    #the channel is retracted
+                if int(dataArray[currentCdIndex][5]) > operationRequest[4][0] and stopPosition == 2:
+                    operationRequest[4][0] = operationRequest[4][0]+operationRequest[4][2]
+                    operationRequest[4][1] = operationRequest[4][1]+operationRequest[4][2]
+                    stop = operationRequest[4][1]-round(0.25*operationRequest[4][2])
+            operationResult = stop - entryPrice
         
         
             
