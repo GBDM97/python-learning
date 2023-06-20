@@ -278,9 +278,9 @@ def selectDaysAndOperate():
             try:
                 dataArray[i]
             except:
-                return allResults
+                return allResults.values()
             
-    return allResults
+    return allResults.values()
 
 print(selectDaysAndOperate())
 
