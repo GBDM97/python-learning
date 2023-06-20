@@ -270,9 +270,9 @@ def selectDaysAndOperate():
         currentDate = dataArray[i][0]
         if isDateWeekDayPresent(dataArray[i][0], operationDaysArray):
             i = operateSpecificDay(initialFimatheChannel(i))
+            print("Operations on day: "+currentDate+ " finished!")
         while currentDate == dataArray[i][0]:
             i+=1
-            
             
     return allResults
 
