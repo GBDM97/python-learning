@@ -6,24 +6,42 @@
 import os
 import datetime
 
+targetVariable = 0 #total profit over residuals variance arround the regression line
+stopLossMultiplier = 2.25
+breakEvenDistance = 1
+
+allResults = {}
+marketInfo = []
+entryPoints = []
+e = 0 #current entry point index
+m = 0 #curent market candle index
+currentOperation = []
+
 cdir = os.getcwd()
 file_path = cdir + "\\FinTech\\Forex\\USDJPY_M15_2023_3Y.csv"
-allResults = {}
-dataArray = []
 with open(file_path, "r") as file:
-    for line in enumerate(file):
-        dataArray.append(line[1].replace('"','').split())
-targetVariable = 0 #total profit over residuals variance arround the regression line
-currentEntryPoint = 0
-
+    for index, line in enumerate(file):
+        if index > 0:
+            marketInfo.append(line.replace('"','').split())
+file_path = cdir + "\\FinTech\\Forex\\Forex_Entrypoints.csv"
+with open(file_path, "r") as file:
+    for index, line in enumerate(file):
+        if index > 0:
+            entryPoints.append(line.replace('\n','').replace(' ',',').split(','))        
 
 def nextEntryPoint():
-    global currentEntryPoint
-    currentEntryPoint += 1
-    return currentEntryPoint
-nextEntryPoint()
+    global e
+    e += 1
+    return e
 
 def searchOperation():
-    for i in dataArray:
-        print(i)
+    global m
+    while entryPoints[e][0] != marketInfo[m][0] or entryPoints[e][1].split(":")[0] > marketInfo[m][1].split(":")[0] or entryPoints[e][1].split(":")[1] >= marketInfo[m][1].split(":")[1]:
+        m+=1
+    enterOperation()
+
+def enterOperation():
+    currentOperation = entryPoints[e] #todo define stop and gain prices
+    
+    
 searchOperation()
