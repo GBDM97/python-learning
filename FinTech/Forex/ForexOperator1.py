@@ -115,6 +115,15 @@ def manageTrailingStop():
             currentOperation[3] += (miSize*minBreakEvenDistance) - 0.25*miSize
         if int(marketInfo[m][-1]) > currentOperation[3] + (miSize*0.25) + (miSize*minBreakEvenDistance) and stopPosition == 2:
             currentOperation[3] += miSize*minBreakEvenDistance
+    if currentOperation[-1] == "sell":
+        if int(marketInfo[m][-1]) < currentOperation[2] - miSize*minBreakEvenDistance and stopPosition == 0:
+            if firstCdPastLine == True:
+                if int(marketInfo[m][-1]) < int(marketInfo[cdPastLineIndex][-1]):
+                    stopPosition = 1
+                    currentOperation[3] = currentOperation[2]
+            else:
+                firstCdPastLine = True
+                cdPastLineIndex = m
 
     
     
