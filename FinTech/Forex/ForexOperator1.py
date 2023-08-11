@@ -127,4 +127,5 @@ def manageTrailingStop():
 
     
     
+    
 searchOperation()
