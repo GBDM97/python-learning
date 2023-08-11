@@ -11,7 +11,7 @@ targetVariable = 0 #total profit over residuals variance arround the regression 
 stopLossMultiplier = 2.25
 minBreakEvenDistance = 1
 
-allResults = {}
+results = []
 marketInfo = []
 entryPoints = []
 e = 0 #current entry point index
@@ -72,6 +72,7 @@ def searchOperation():
     enterOperation()
 
 def enterOperation():
+    global currentOperation
     currentOperation = entryPoints[e] #dateTime, entryPointRefPrice, entryPointActualPrice, SL, TP, Side
     if currentOperation[-1] == 'buy':
         slippage = math.floor(currentOperation[2] - currentOperation[1])
@@ -84,24 +85,27 @@ def enterOperation():
         sl = currentOperation[1] + miSize*stopLossMultiplier - slippage
         currentOperation[3] = sl
         currentOperation[1] -= slippage
-
     waitForPositionClose()
 
 def waitForPositionClose():
     global stopPosition
+    global m
     if currentOperation[-1] == "buy":
         while marketInfo[m][-1] > currentOperation[3]: #implement different logic when having more tp types
             m+=1
             manageTrailingStop()
+        closePosition()
     if currentOperation[-1] == "sell":
         while marketInfo[m][-1] < currentOperation[3]:
             m+=1
             manageTrailingStop()
+        closePosition()
 
 def manageTrailingStop():
+    global stopPosition
     firstCdPastLine = False
     cdPastLineIndex = None
-    
+
     if currentOperation[-1] == "buy":
         if int(marketInfo[m][-1]) > currentOperation[2] + miSize*minBreakEvenDistance and stopPosition == 0:
             if firstCdPastLine == True:
@@ -132,5 +136,18 @@ def manageTrailingStop():
         if int(marketInfo[m][-1]) < currentOperation[3] - (miSize*0.25) - (2*miSize*minBreakEvenDistance) and stopPosition == 2:
             currentOperation[3] -= minBreakEvenDistance*miSize
 
+def registerResults():
+    if currentOperation[-1] == "buy":
+        results.append({currentOperation[0]:currentOperation[3]-currentOperation[2]}) #change here when implementing new operation types
+    if currentOperation[-1] == "sell":
+        results.append({currentOperation[0]:currentOperation[2]-currentOperation[3]}) #change here when implementing new operation types
+
+def closePosition():
+    registerResults()
+    nextEntryPoint()
+    for d in results:
+        key = (next(iter(d)))
+        print(key.strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ str(d[key]))
+    # searchOperation()
     
 searchOperation()
