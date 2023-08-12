@@ -19,6 +19,8 @@ m = 0 #curent market candle index
 currentOperation = []
 miSize = 0
 stopPosition = 0
+firstCdPastLine = False
+cdPastLineIndex = None
 
 def appendInfo(pl):
     out = []
@@ -67,7 +69,7 @@ def nextEntryPoint():
 
 def searchOperation():
     global m
-    while entryPoints[e][0] >= marketInfo[m][0]:
+    while entryPoints[e][0] > marketInfo[m][0]:
         m+=1
     enterOperation()
 
@@ -90,6 +92,8 @@ def enterOperation():
 def waitForPositionClose():
     global stopPosition
     global m
+    
+    m+=1
     if currentOperation[-1] == "buy":
         while marketInfo[m][-1] > currentOperation[3]: #implement different logic when having more tp types
             m+=1
@@ -103,37 +107,39 @@ def waitForPositionClose():
 
 def manageTrailingStop():
     global stopPosition
-    firstCdPastLine = False
-    cdPastLineIndex = None
+    global minBreakEvenDistance
+    global firstCdPastLine
+    global cdPastLineIndex
 
     if currentOperation[-1] == "buy":
-        if int(marketInfo[m][-1]) > currentOperation[2] + miSize*minBreakEvenDistance and stopPosition == 0:
+        if marketInfo[m][-1] > currentOperation[2] + miSize*minBreakEvenDistance and stopPosition == 0:
             if firstCdPastLine == True:
-                if int(marketInfo[m][-1]) > int(marketInfo[cdPastLineIndex][-1]):
+                if marketInfo[m][-1] > marketInfo[cdPastLineIndex][-1]:
                     stopPosition = 1
                     currentOperation[3] = currentOperation[2]
             else:
                 firstCdPastLine = True
                 cdPastLineIndex = m
-        if int(marketInfo[m][-1]) > currentOperation[1] + (2*minBreakEvenDistance*miSize) and stopPosition == 1:
+        if marketInfo[m][-1] > currentOperation[1] + (2*minBreakEvenDistance*miSize) and stopPosition == 1:
             stopPosition = 2
             currentOperation[3] = (miSize*minBreakEvenDistance) - (0.25*miSize) + currentOperation[1]
-        if int(marketInfo[m][-1]) > currentOperation[3] + (miSize*0.25) + (2*miSize*minBreakEvenDistance) and stopPosition == 2:
+        if marketInfo[m][-1] > currentOperation[3] + (miSize*0.25) + (2*miSize*minBreakEvenDistance) and stopPosition == 2:
             currentOperation[3] += minBreakEvenDistance*miSize
 
     if currentOperation[-1] == "sell":
-        if int(marketInfo[m][-1]) < currentOperation[2] - miSize*minBreakEvenDistance and stopPosition == 0:
+        if marketInfo[m][-1] < currentOperation[2] - miSize*minBreakEvenDistance and stopPosition == 0:
+            print(currentOperation[2] - miSize*minBreakEvenDistance)
             if firstCdPastLine == True:
-                if int(marketInfo[m][-1]) < int(marketInfo[cdPastLineIndex][-1]):
+                if marketInfo[m][-1] < marketInfo[cdPastLineIndex][-1]:
                     stopPosition = 1
                     currentOperation[3] = currentOperation[2]
             else:
                 firstCdPastLine = True
                 cdPastLineIndex = m
-        if int(marketInfo[m][-1]) < currentOperation[1] - (2*minBreakEvenDistance*miSize) and stopPosition == 1:
+        if marketInfo[m][-1] < currentOperation[1] - (2*minBreakEvenDistance*miSize) and stopPosition == 1:
             stopPosition = 2
             currentOperation[3] = currentOperation[1] - (miSize*minBreakEvenDistance) + (0.25*miSize)
-        if int(marketInfo[m][-1]) < currentOperation[3] - (miSize*0.25) - (2*miSize*minBreakEvenDistance) and stopPosition == 2:
+        if marketInfo[m][-1] < currentOperation[3] - (miSize*0.25) - (2*miSize*minBreakEvenDistance) and stopPosition == 2:
             currentOperation[3] -= minBreakEvenDistance*miSize
 
 def registerResults():
@@ -147,7 +153,7 @@ def closePosition():
     nextEntryPoint()
     for d in results:
         key = (next(iter(d)))
-        print(key.strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ str(d[key]))
+        print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(d[key]))
     # searchOperation()
     
 searchOperation()
