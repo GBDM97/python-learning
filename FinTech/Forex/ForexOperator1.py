@@ -5,7 +5,8 @@
 #dimensionsInput = [tpType, stoplossMultiplier, minBreakEvenDistance]
 import os
 import math
-from datetime import datetime, timedelta
+import time
+from datetime import datetime
 
 targetVariable = 0 #total profit over residuals variance arround the regression line
 stopLossMultiplier = 2.25
@@ -21,6 +22,7 @@ miSize = 0
 stopPosition = 0
 firstCdPastLine = False
 cdPastLineIndex = None
+start_time = time.time()
 
 def appendInfo(pl):
     out = []
@@ -149,8 +151,10 @@ def manageTrailingStop():
 def registerResults():
     if currentOperation[-1] == "buy":
         results.append({currentOperation[0]:currentOperation[3]-currentOperation[2]}) #change here when implementing new operation types
+        printRes()
     if currentOperation[-1] == "sell":
         results.append({currentOperation[0]:currentOperation[2]-currentOperation[3]}) #change here when implementing new operation types
+        printRes()
 
 def closePosition():
     registerResults()
@@ -158,11 +162,15 @@ def closePosition():
     searchOperation()
 
 def verifyEndPoint():
-    if m+1 != len(marketInfo) or entryPoints[e] != None:
+    if m != len(marketInfo) and e != len(entryPoints):
         return
-    for d in results:
-        key = (next(iter(d)))
-        print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(d[key]))
+    print(len(results))
+    end_time = time.time()
+    print(end_time-start_time)
+    exit()
+
+def printRes():
+    print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(results[e][currentOperation[0]]))
 
 searchOperation()
 
