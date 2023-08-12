@@ -72,6 +72,12 @@ def nextEntryPoint():
 
 def searchOperation():
     global m
+    global stopPosition
+    global cdPastLineIndex
+    global firstCdPastLine
+    stopPosition = 0
+    cdPastLineIndex = 0
+    firstCdPastLine = False
     while entryPoints[e][0] > marketInfo[m][0]:
         m+=1
         verifyEndPoint()
@@ -94,7 +100,6 @@ def enterOperation():
     waitForPositionClose()
 
 def waitForPositionClose():
-    global stopPosition
     global m
     
     m+=1
@@ -113,12 +118,13 @@ def waitForPositionClose():
         closePosition()
 
 def manageTrailingStop():
-    global stopPosition
     global minBreakEvenDistance
-    global firstCdPastLine
+    global stopPosition
     global cdPastLineIndex
+    global firstCdPastLine
 
     if currentOperation[-1] == "buy":
+        currentCandle = marketInfo[m]
         if marketInfo[m][-1] > currentOperation[2] + miSize*minBreakEvenDistance and stopPosition == 0:
             if firstCdPastLine == True:
                 if marketInfo[m][-1] > marketInfo[cdPastLineIndex][-1]:
@@ -134,6 +140,7 @@ def manageTrailingStop():
             currentOperation[3] += minBreakEvenDistance*miSize
 
     if currentOperation[-1] == "sell":
+        currentCandle = marketInfo[m]
         if marketInfo[m][-1] < currentOperation[2] - miSize*minBreakEvenDistance and stopPosition == 0:
             if firstCdPastLine == True:
                 if marketInfo[m][-1] < marketInfo[cdPastLineIndex][-1]:
