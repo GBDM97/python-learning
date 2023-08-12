@@ -65,6 +65,7 @@ with open(file_path, "r") as file:
 def nextEntryPoint():
     global e
     e += 1
+    verifyEndPoint()
     return e
 
 def searchOperation():
@@ -95,6 +96,7 @@ def waitForPositionClose():
     global m
     
     m+=1
+    verifyEndPoint()
     if currentOperation[-1] == "buy":
         while marketInfo[m][-1] > currentOperation[3]: #implement different logic when having more tp types
             m+=1
