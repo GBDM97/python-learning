@@ -71,6 +71,7 @@ def searchOperation():
     global m
     while entryPoints[e][0] > marketInfo[m][0]:
         m+=1
+        verifyEndPoint()
     enterOperation()
 
 def enterOperation():
@@ -98,11 +99,13 @@ def waitForPositionClose():
         while marketInfo[m][-1] > currentOperation[3]: #implement different logic when having more tp types
             m+=1
             manageTrailingStop()
+            verifyEndPoint()
         closePosition()
     if currentOperation[-1] == "sell":
         while marketInfo[m][-1] < currentOperation[3]:
             m+=1
             manageTrailingStop()
+            verifyEndPoint()
         closePosition()
 
 def manageTrailingStop():
@@ -128,7 +131,6 @@ def manageTrailingStop():
 
     if currentOperation[-1] == "sell":
         if marketInfo[m][-1] < currentOperation[2] - miSize*minBreakEvenDistance and stopPosition == 0:
-            print(currentOperation[2] - miSize*minBreakEvenDistance)
             if firstCdPastLine == True:
                 if marketInfo[m][-1] < marketInfo[cdPastLineIndex][-1]:
                     stopPosition = 1
@@ -151,9 +153,13 @@ def registerResults():
 def closePosition():
     registerResults()
     nextEntryPoint()
+    searchOperation()
+
+def verifyEndPoint():
+    if marketInfo[m] != None or entryPoints[e] != None:
+        return
     for d in results:
         key = (next(iter(d)))
         print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(d[key]))
-    # searchOperation()
-    
+
 searchOperation()
