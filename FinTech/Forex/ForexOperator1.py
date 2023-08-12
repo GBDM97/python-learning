@@ -156,10 +156,11 @@ def closePosition():
     searchOperation()
 
 def verifyEndPoint():
-    if marketInfo[m] != None or entryPoints[e] != None:
+    if m+1 != len(marketInfo) or entryPoints[e] != None:
         return
     for d in results:
         key = (next(iter(d)))
         print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(d[key]))
 
 searchOperation()
+
