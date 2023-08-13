@@ -66,8 +66,9 @@ with open(file_path, "r") as file:
 
 def nextEntryPoint():
     global e
-    e += 1
-    verifyEndPoint()
+    while entryPoints[e][0] < marketInfo[m][0]:
+        e += 1
+        verifyEndPoint()
     return e
 
 def searchOperation():
@@ -87,14 +88,16 @@ def enterOperation():
     global currentOperation
     currentOperation = entryPoints[e] #dateTime, entryPointRefPrice, entryPointActualPrice, SL, TP, Side
     if currentOperation[-1] == 'buy':
-        slippage = math.floor(currentOperation[2] - currentOperation[1])
-        sl = currentOperation[1] - miSize*stopLossMultiplier + slippage
+        slippage = math.floor((currentOperation[2] - currentOperation[1])/miSize)
+        currentOperation[1] += slippage*miSize 
+        sl = currentOperation[1] - miSize*stopLossMultiplier
         currentOperation[3] = sl
         currentOperation[1] += slippage
             
     if currentOperation[-1] == 'sell':
-        slippage = math.floor(currentOperation[1] - currentOperation[2])
-        sl = currentOperation[1] + miSize*stopLossMultiplier - slippage
+        slippage = math.floor((currentOperation[1] - currentOperation[2])/miSize)
+        currentOperation[1] -= slippage*miSize 
+        sl = currentOperation[1] + miSize*stopLossMultiplier
         currentOperation[3] = sl
         currentOperation[1] -= slippage
     waitForPositionClose()
@@ -177,7 +180,9 @@ def verifyEndPoint():
     exit()
 
 def printRes():
-    print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(results[e][currentOperation[0]]))
-
+    try:
+        print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(results[-1][currentOperation[0]]))
+    except Exception as err:
+        print(err)
 searchOperation()
 
