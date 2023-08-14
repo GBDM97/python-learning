@@ -203,7 +203,7 @@ def findTargetVariable():
     y_prediction = model.predict(x)
     residuals = y - y_prediction
     residuals_variance = np.var(residuals)
-    print("RESIDUALS VARIANCE ====>>> "+ str(residuals_variance/y[-1]))
+    print("TARGET VARIABLE ====>>> "+ str(residuals_variance/y[-1]))
 
 
 # def printRes():
