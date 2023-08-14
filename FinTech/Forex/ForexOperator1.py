@@ -12,7 +12,7 @@ targetVariable = 0 #total profit over residuals variance arround the regression 
 stopLossMultiplier = 2.25
 minBreakEvenDistance = 1
 
-results = []
+totalResult = 0
 marketInfo = []
 entryPoints = []
 e = 0 #current entry point index
@@ -22,6 +22,11 @@ miSize = 0
 stopPosition = 0
 firstCdPastLine = False
 cdPastLineIndex = None
+xNPArray = []
+yNPArray = []
+xNPArray.append(totalResult)
+yNPArray.append(m)
+
 start_time = time.time()
 
 def appendInfo(pl):
@@ -68,7 +73,7 @@ def nextEntryPoint():
     global e
     while entryPoints[e][0] < marketInfo[m][0]:
         e += 1
-        verifyEndPoint()
+        verifyEndPointAndAddToNpArrays()
     return e
 
 def searchOperation():
@@ -81,7 +86,7 @@ def searchOperation():
     firstCdPastLine = False
     while entryPoints[e][0] > marketInfo[m][0]:
         m+=1
-        verifyEndPoint()
+        verifyEndPointAndAddToNpArrays()
     enterOperation()
 
 def enterOperation():
@@ -106,18 +111,18 @@ def waitForPositionClose():
     global m
     
     m+=1
-    verifyEndPoint()
+    verifyEndPointAndAddToNpArrays()
     if currentOperation[-1] == "buy":
         while marketInfo[m][-1] > currentOperation[3]: #implement different logic when having more tp types
             m+=1
             manageTrailingStop()
-            verifyEndPoint()
+            verifyEndPointAndAddToNpArrays()
         closePosition()
     if currentOperation[-1] == "sell":
         while marketInfo[m][-1] < currentOperation[3]:
             m+=1
             manageTrailingStop()
-            verifyEndPoint()
+            verifyEndPointAndAddToNpArrays()
         closePosition()
 
 def manageTrailingStop():
@@ -159,30 +164,45 @@ def manageTrailingStop():
             currentOperation[3] -= minBreakEvenDistance*miSize
 
 def registerResults():
+    global totalResult
     if currentOperation[-1] == "buy":
-        results.append({currentOperation[0]:currentOperation[3]-currentOperation[2]}) #change here when implementing new operation types
-        printRes()
+        totalResult += currentOperation[3]-currentOperation[2] #change here when implementing new operation types
+        # printRes()
     if currentOperation[-1] == "sell":
-        results.append({currentOperation[0]:currentOperation[2]-currentOperation[3]}) #change here when implementing new operation types
-        printRes()
+        totalResult += currentOperation[2]-currentOperation[3] #change here when implementing new operation types
+        # printRes()
 
 def closePosition():
     registerResults()
     nextEntryPoint()
     searchOperation()
 
-def verifyEndPoint():
+def verifyEndPointAndAddToNpArrays():
+    global xNPArray
+    global yNPArray
     if m != len(marketInfo) and e != len(entryPoints):
+        if m != yNPArray[-1]:
+            xNPArray.append(totalResult)
+            yNPArray.append(m)
         return
-    print(len(results))
+    xNPArray.append(totalResult)
+    yNPArray.append(m+1)
+    previousI = -1
+    for i in yNPArray:
+        if previousI != i-1:
+            break
+        print(str(yNPArray[i])+" ====> "+str(xNPArray[i]))
+        print()
+        previousI = i
+    # print(len(results))
     end_time = time.time()
-    print(end_time-start_time)
+    print("TIME ====> " + str(end_time-start_time))
     exit()
 
-def printRes():
-    try:
-        print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(results[-1][currentOperation[0]]))
-    except Exception as err:
-        print(err)
+# def printRes():
+#     try:
+#         print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(results[-1][currentOperation[0]]))
+#     except Exception as err:
+#         print(err)
 searchOperation()
 
