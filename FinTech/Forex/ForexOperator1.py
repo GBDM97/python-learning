@@ -167,6 +167,8 @@ def manageTrailingStop():
 
 def registerResults():
     global totalResult
+    if e == 98:
+        print
     if currentOperation[-1] == "buy":
         totalResult += currentOperation[3]-currentOperation[2] #change here when implementing new operation types
         # printRes()
@@ -189,18 +191,19 @@ def verifyEndPointAndAddToNpArrays():
         return
     xNPArray.append(m+1)
     yNPArray.append(totalResult)
-    findResidualVariance()
+    findTargetVariable()
     end_time = time.time()
     print("TIME ====> " + str(end_time-start_time))
+    exit()
     
-def findResidualVariance():
+def findTargetVariable():
     x = np.array(xNPArray).reshape((-1, 1))
     y = np.array(yNPArray)
     model = LinearRegression().fit(x,y)
     y_prediction = model.predict(x)
     residuals = y - y_prediction
     residuals_variance = np.var(residuals)
-    print("RESIDUALS VARIANCE ====>>> "+ str(residuals_variance))
+    print("RESIDUALS VARIANCE ====>>> "+ str(residuals_variance/y[-1]))
 
 
 # def printRes():
