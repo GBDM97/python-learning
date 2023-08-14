@@ -7,6 +7,8 @@ import os
 import math
 import time
 from datetime import datetime
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 targetVariable = 0 #total profit over residuals variance arround the regression line
 stopLossMultiplier = 2.25
@@ -182,22 +184,24 @@ def verifyEndPointAndAddToNpArrays():
     global yNPArray
     if m != len(marketInfo) and e != len(entryPoints):
         if m != yNPArray[-1]:
-            xNPArray.append(totalResult)
-            yNPArray.append(m)
+            xNPArray.append(m)
+            yNPArray.append(totalResult)
         return
-    xNPArray.append(totalResult)
-    yNPArray.append(m+1)
-    previousI = -1
-    for i in yNPArray:
-        if previousI != i-1:
-            break
-        print(str(yNPArray[i])+" ====> "+str(xNPArray[i]))
-        print()
-        previousI = i
-    # print(len(results))
+    xNPArray.append(m+1)
+    yNPArray.append(totalResult)
+    findResidualVariance()
     end_time = time.time()
     print("TIME ====> " + str(end_time-start_time))
-    exit()
+    
+def findResidualVariance():
+    x = np.array(xNPArray).reshape((-1, 1))
+    y = np.array(yNPArray)
+    model = LinearRegression().fit(x,y)
+    y_prediction = model.predict(x)
+    residuals = y - y_prediction
+    residuals_variance = np.var(residuals)
+    print("RESIDUALS VARIANCE ====>>> "+ str(residuals_variance))
+
 
 # def printRes():
 #     try:
