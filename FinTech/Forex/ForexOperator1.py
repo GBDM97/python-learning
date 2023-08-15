@@ -5,7 +5,6 @@
 #dimensionsInput = [tpType, stoplossMultiplier, minBreakEvenDistance]
 import os
 import math
-import time
 from datetime import datetime
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -183,8 +182,7 @@ def verifyEndPointAndAddToNpArrays():
     xNPArray.append(m+1)
     yNPArray.append(totalResult)
     findTargetVariable()
-    end_time = time.time()
-    print("TIME ====> " + str(end_time-start_time))
+    print(d)
     ex = True
     
 def findTargetVariable():
@@ -195,10 +193,9 @@ def findTargetVariable():
     y_prediction = model.predict(x)
     residuals = y - y_prediction
     residuals_variance = np.var(residuals)
-    lastRes = yNPArray[-1]
-    targetVariable = residuals_variance/yNPArray[-1]
+    targetVariable = residuals_variance#/yNPArray[-1]
 
-def operate(slm, mbd):
+def operate(slm, mbd, dn):
     global stopLossMultiplier
     global minBreakEvenDistance
     global currentOperation
@@ -207,10 +204,10 @@ def operate(slm, mbd):
     global stopPosition
     global targetVariable
     global totalResult
-    global start_time
     global xNPArray
     global yNPArray
     global ex
+    global d
     global e
     global m
     stopLossMultiplier = slm
@@ -219,6 +216,7 @@ def operate(slm, mbd):
     totalResult = 0
     e = 0 #current entry point index
     m = 0 #curent market candle index
+    d = dn #definition number
     ex = False
     currentOperation = []
     stopPosition = 0
@@ -228,7 +226,6 @@ def operate(slm, mbd):
     yNPArray = []
     xNPArray.append(totalResult)
     yNPArray.append(m)
-    start_time = time.time()
     searchOperation()
     return targetVariable
 
