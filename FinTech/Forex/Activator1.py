@@ -6,6 +6,8 @@ start_time = time.time()
 X = []
 Y = []
 Z = []
+minZ = 1000
+bestOperation = []
 
 X_RANGE = [0.01,4.25]
 Y_RANGE = [0.01,4.25]
@@ -20,13 +22,16 @@ for l in range(1, DEFINITION):
 dn=0
 for c in range(0, len(X)):
     dn+=1
-    Z.append(ForexOperator1.operate(X[c],Y[c],dn))
+    fx = ForexOperator1.operate(X[c],Y[c],dn)
+    if fx < minZ:
+        minZ = fx
+        bestOperation = [X[c],Y[c],minZ]
+    Z.append(fx)
+    
+# print("X = "+ str(X))
+# print("Y = "+ str(Y))
+# print("Z = "+ str(Z))
+print(bestOperation)
 
-print("X = ")
-print(X)
-print("Y = ")
-print(Y)
-print("Z = ")
-print(Z)
 print(time.time()-start_time)
 
