@@ -10,26 +10,9 @@ from datetime import datetime
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-targetVariable = 0 #total profit over residuals variance arround the regression line
-stopLossMultiplier = 2.25
-minBreakEvenDistance = 1
-exit = False
-totalResult = 0
 marketInfo = []
 entryPoints = []
-e = 0 #current entry point index
-m = 0 #curent market candle index
-currentOperation = []
 miSize = 0
-stopPosition = 0
-firstCdPastLine = False
-cdPastLineIndex = None
-xNPArray = []
-yNPArray = []
-xNPArray.append(totalResult)
-yNPArray.append(m)
-
-start_time = time.time()
 
 def appendInfo(pl):
     out = []
@@ -76,7 +59,7 @@ def nextEntryPoint():
     while entryPoints[e][0] < marketInfo[m][0]:
         e += 1
         verifyEndPointAndAddToNpArrays()
-        if exit:
+        if ex:
             return
     return
 
@@ -88,11 +71,13 @@ def searchOperation():
     stopPosition = 0
     cdPastLineIndex = 0
     firstCdPastLine = False
-    if exit:
-        return
+    if ex:
+            return
     while entryPoints[e][0] > marketInfo[m][0]:
         m+=1
         verifyEndPointAndAddToNpArrays()
+        if ex:
+            return
     enterOperation()
 
 def enterOperation():
@@ -119,16 +104,24 @@ def waitForPositionClose():
     m+=1
     verifyEndPointAndAddToNpArrays()
     if currentOperation[-1] == "buy":
+        if ex:
+            return
         while marketInfo[m][-1] > currentOperation[3]: #implement different logic when having more tp types
             m+=1
-            manageTrailingStop()
             verifyEndPointAndAddToNpArrays()
+            if ex:
+                return
+            manageTrailingStop()
         closePosition()
     if currentOperation[-1] == "sell":
+        if ex:
+            return
         while marketInfo[m][-1] < currentOperation[3]:
             m+=1
-            manageTrailingStop()
             verifyEndPointAndAddToNpArrays()
+            if ex:
+                return
+            manageTrailingStop()
         closePosition()
 
 def manageTrailingStop():
@@ -181,7 +174,7 @@ def closePosition():
 def verifyEndPointAndAddToNpArrays():
     global xNPArray
     global yNPArray
-    global exit
+    global ex
     if m != len(marketInfo) and e != len(entryPoints):
         if m != yNPArray[-1]:
             xNPArray.append(m)
@@ -192,7 +185,7 @@ def verifyEndPointAndAddToNpArrays():
     findTargetVariable()
     end_time = time.time()
     print("TIME ====> " + str(end_time-start_time))
-    exit = True
+    ex = True
     
 def findTargetVariable():
     global targetVariable
@@ -202,13 +195,40 @@ def findTargetVariable():
     y_prediction = model.predict(x)
     residuals = y - y_prediction
     residuals_variance = np.var(residuals)
+    lastRes = yNPArray[-1]
     targetVariable = residuals_variance/yNPArray[-1]
 
 def operate(slm, mbd):
     global stopLossMultiplier
     global minBreakEvenDistance
+    global currentOperation
+    global firstCdPastLine
+    global cdPastLineIndex
+    global stopPosition
+    global targetVariable
+    global totalResult
+    global start_time
+    global xNPArray
+    global yNPArray
+    global ex
+    global e
+    global m
     stopLossMultiplier = slm
     minBreakEvenDistance = mbd
+    targetVariable = 0 #total profit over residuals variance arround the regression line
+    totalResult = 0
+    e = 0 #current entry point index
+    m = 0 #curent market candle index
+    ex = False
+    currentOperation = []
+    stopPosition = 0
+    firstCdPastLine = False
+    cdPastLineIndex = None
+    xNPArray = []
+    yNPArray = []
+    xNPArray.append(totalResult)
+    yNPArray.append(m)
+    start_time = time.time()
     searchOperation()
     return targetVariable
 
