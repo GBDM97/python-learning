@@ -168,8 +168,6 @@ def manageTrailingStop():
 
 def registerResults():
     global totalResult
-    if e == 98:
-        print
     if currentOperation[-1] == "buy":
         totalResult += currentOperation[3]-currentOperation[2] #change here when implementing new operation types
     if currentOperation[-1] == "sell":
@@ -204,7 +202,7 @@ def findTargetVariable():
     y_prediction = model.predict(x)
     residuals = y - y_prediction
     residuals_variance = np.var(residuals)
-    targetVariable = residuals_variance/y[-1]
+    targetVariable = residuals_variance/yNPArray[-1]
 
 def operate(slm, mbd):
     global stopLossMultiplier
