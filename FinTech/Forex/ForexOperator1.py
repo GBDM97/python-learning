@@ -13,7 +13,7 @@ from sklearn.linear_model import LinearRegression
 targetVariable = 0 #total profit over residuals variance arround the regression line
 stopLossMultiplier = 2.25
 minBreakEvenDistance = 1
-
+exit = False
 totalResult = 0
 marketInfo = []
 entryPoints = []
@@ -76,7 +76,9 @@ def nextEntryPoint():
     while entryPoints[e][0] < marketInfo[m][0]:
         e += 1
         verifyEndPointAndAddToNpArrays()
-    return e
+        if exit:
+            return
+    return
 
 def searchOperation():
     global m
@@ -86,6 +88,8 @@ def searchOperation():
     stopPosition = 0
     cdPastLineIndex = 0
     firstCdPastLine = False
+    if exit:
+        return
     while entryPoints[e][0] > marketInfo[m][0]:
         m+=1
         verifyEndPointAndAddToNpArrays()
@@ -128,13 +132,11 @@ def waitForPositionClose():
         closePosition()
 
 def manageTrailingStop():
-    global minBreakEvenDistance
     global stopPosition
     global cdPastLineIndex
     global firstCdPastLine
 
     if currentOperation[-1] == "buy":
-        currentCandle = marketInfo[m]
         if marketInfo[m][-1] > currentOperation[2] + miSize*minBreakEvenDistance and stopPosition == 0:
             if firstCdPastLine == True:
                 if marketInfo[m][-1] > marketInfo[cdPastLineIndex][-1]:
@@ -150,7 +152,6 @@ def manageTrailingStop():
             currentOperation[3] += minBreakEvenDistance*miSize
 
     if currentOperation[-1] == "sell":
-        currentCandle = marketInfo[m]
         if marketInfo[m][-1] < currentOperation[2] - miSize*minBreakEvenDistance and stopPosition == 0:
             if firstCdPastLine == True:
                 if marketInfo[m][-1] < marketInfo[cdPastLineIndex][-1]:
@@ -171,10 +172,8 @@ def registerResults():
         print
     if currentOperation[-1] == "buy":
         totalResult += currentOperation[3]-currentOperation[2] #change here when implementing new operation types
-        # printRes()
     if currentOperation[-1] == "sell":
         totalResult += currentOperation[2]-currentOperation[3] #change here when implementing new operation types
-        # printRes()
 
 def closePosition():
     registerResults()
@@ -184,6 +183,7 @@ def closePosition():
 def verifyEndPointAndAddToNpArrays():
     global xNPArray
     global yNPArray
+    global exit
     if m != len(marketInfo) and e != len(entryPoints):
         if m != yNPArray[-1]:
             xNPArray.append(m)
@@ -194,22 +194,23 @@ def verifyEndPointAndAddToNpArrays():
     findTargetVariable()
     end_time = time.time()
     print("TIME ====> " + str(end_time-start_time))
-    exit()
+    exit = True
     
 def findTargetVariable():
+    global targetVariable
     x = np.array(xNPArray).reshape((-1, 1))
     y = np.array(yNPArray)
     model = LinearRegression().fit(x,y)
     y_prediction = model.predict(x)
     residuals = y - y_prediction
     residuals_variance = np.var(residuals)
-    print("TARGET VARIABLE ====>>> "+ str(residuals_variance/y[-1]))
+    targetVariable = residuals_variance/y[-1]
 
-
-# def printRes():
-#     try:
-#         print(currentOperation[0].strftime("%Y-%m-%d %H:%M:%S") +" ======> "+ marketInfo[m][0].strftime("%Y-%m-%d %H:%M:%S") +" = "+ str(results[-1][currentOperation[0]]))
-#     except Exception as err:
-#         print(err)
-searchOperation()
+def operate(slm, mbd):
+    global stopLossMultiplier
+    global minBreakEvenDistance
+    stopLossMultiplier = slm
+    minBreakEvenDistance = mbd
+    searchOperation()
+    return targetVariable
 
