@@ -8,18 +8,19 @@ X = []
 Y = []
 Z = []
 minZ = 1000
+aspectRatioDivider = 25
 bestOperation = []
 
 X_RANGE = [0.01,4.25]
 Y_RANGE = [0.01,4.25]
 
-DEFINITION = 4 #insert here how many pixels of definition do you want for the 3d graph
+DEFINITION = 1000 #insert here how many pixels of definition do you want for the 3d graph
 
 DEFINITION = int(math.sqrt(DEFINITION))
 for l in range(1, DEFINITION+1):
     for ll in range(1, DEFINITION+1):
-        X.append(((X_RANGE[1]-X_RANGE[0])/DEFINITION)*l)
-        Y.append(((Y_RANGE[1]-Y_RANGE[0])/DEFINITION)*ll)
+        X.append((((X_RANGE[1]-X_RANGE[0])/DEFINITION)*l)/aspectRatioDivider)
+        Y.append((((Y_RANGE[1]-Y_RANGE[0])/DEFINITION)*ll)/aspectRatioDivider)
 dn=0
 for c in range(0, len(X)):
     dn+=1
@@ -27,7 +28,7 @@ for c in range(0, len(X)):
     if fx < minZ:
         minZ = fx
         bestOperation = [X[c],Y[c],minZ]
-    Z.append(fx)
+    Z.append(fx/aspectRatioDivider)
     
 print("X = "+ str(X))
 print("Y = "+ str(Y))
