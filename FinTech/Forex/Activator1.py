@@ -14,7 +14,7 @@ bestOperation = []
 X_RANGE = [0.01,4.25]
 Y_RANGE = [0.01,4.25]
 
-DEFINITION = 729 #insert here how many pixels of definition do you want for the 3d graph
+DEFINITION = 10000 #insert here how many pixels of definition do you want for the 3d graph
 
 DEFINITION = int(math.sqrt(DEFINITION))
 for l in range(1, DEFINITION+1):
@@ -29,11 +29,12 @@ for c in range(0, len(X)):
         minZ = fx
         bestOperation = [X[c],Y[c],minZ]
     Z.append(fx/aspectRatioDivider)
-    
-print("X = "+ str(X))
-print("Y = "+ str(Y))
-print("Z = "+ str(Z))
-# print(bestOperation)
+
+with open('3D.txt', 'w') as file:
+    file.write("X = "+ str(X))
+    file.write("Y = "+ str(Y))
+    file.write("Z = "+ str(Z))
+print(bestOperation)
 
 print(time.time()-start_time)
 
