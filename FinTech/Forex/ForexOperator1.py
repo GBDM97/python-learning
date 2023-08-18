@@ -194,19 +194,20 @@ def verifyEndPointAndAddToNpArrays():
     global ex
     if m != len(marketInfo) and e != len(entryPoints):
         if m != yNPArray[-1]:
-            xNPArray.append(np.array([m+1],dtype=np.float32))
-            yNPArray.append(np.array([totalResult],dtype=np.float32))
+            xNPArray=np.append(xNPArray,m+1)
+            yNPArray=np.append(yNPArray,totalResult)
         return
-    xNPArray.append(np.array([m+1],dtype=np.float32))
-    yNPArray.append(np.array([totalResult],dtype=np.float32))
+    xNPArray=np.append(xNPArray,m+1)
+    yNPArray=np.append(yNPArray,totalResult)
     findTargetVariable()
     print(d)
     ex = True
     
 def findTargetVariable():
     global targetVariable
-    x = np.append(x, xNPArray).reshape((-1, 1))
-    y = np.append(y, yNPArray)
+    global x
+    x = np.array(xNPArray,dtype=np.int32).reshape((-1, 1))
+    y = np.array(yNPArray,dtype=np.float32)
     model = LinearRegression().fit(x,y)
     y_prediction = model.predict(x)
     residuals = y - y_prediction
@@ -237,8 +238,6 @@ def operate(slm, mbd, dn):
     d = dn #definition number
     ex = False
     currentOperation = np.array([],dtype=edtype)
-    if dn == 700:
-        print
     stopPosition = 0
     firstCdPastLine = False
     cdPastLineIndex = None
@@ -247,5 +246,7 @@ def operate(slm, mbd, dn):
     xNPArray.append(np.array([totalResult],dtype=np.float32))
     yNPArray.append(np.array([m],dtype=np.float32))
     searchOperation()
+    if dn == 153:
+        print(x)
     return targetVariable
 
