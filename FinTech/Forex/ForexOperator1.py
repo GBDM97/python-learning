@@ -9,22 +9,6 @@ from datetime import datetime
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-mdtype = np.dtype([
-    ('datetime', np.datetime64),
-    ('open', np.float32),
-    ('high', np.float32),
-    ('low', np.float32),
-    ('close', np.float32)
-])
-edtype = np.dtype([
-    ('datetime', np.datetime64),
-    ('entryPointRef', np.float32),
-    ('entryPointActual', np.float32),
-    ('sl', np.float32),
-    ('tp', np.float32),
-    ('side', np.dtype('S10'))
-])
-
 marketInfo = []
 entryPoints = []
 miSize = 0
@@ -38,22 +22,21 @@ def appendInfo(pl):
         int(pl[1].split(":")[1]),
         int(pl[1].split(":")[2])
     )
+    out = []
     if pl[-1] != "buy" and pl[-1] != "sell":
-        out=np.array([],dtype=mdtype)
-        out=np.append(out, date_time)
-        out=np.append(out,float(pl[2]))
-        out=np.append(out,float(pl[3]))
-        out=np.append(out,float(pl[4]))
-        out=np.append(out,float(pl[5]))
+        out.append(date_time)
+        out.append(float(pl[2]))
+        out.append(float(pl[3]))
+        out.append(float(pl[4]))
+        out.append(float(pl[5]))
     else:
-        out=np.array([],dtype=edtype)
-        out=np.append(out, date_time)
-        out=np.append(out,float(pl[2]))
-        out=np.append(out,float(pl[3]))
-        out=np.append(out,0)
-        out=np.append(out,0)
-        out=np.append(out,pl[4])
-    return np.array(out)
+        out.append(date_time)
+        out.append(float(pl[2]))
+        out.append(float(pl[3]))
+        out.append(0)
+        out.append(0)
+        out.append(pl[4])
+    return out
 
 cdir = os.getcwd()
 file_path = cdir + "\\FinTech\\Forex\\USDJPY_M15_2023_3Y.csv"
@@ -99,7 +82,7 @@ def searchOperation():
 
 def enterOperation():
     global currentOperation
-    currentOperation = entryPoints[e] #dateTime, entryPointRefPrice, entryPointActualPrice, SL, TP, Side
+    currentOperation = list(entryPoints[e]) #dateTime, entryPointRefPrice, entryPointActualPrice, SL, TP, Side
     if currentOperation[-1] == 'buy':
         slippage = math.floor((currentOperation[2] - currentOperation[1])/miSize)
         currentOperation[1] += slippage*miSize 
@@ -194,11 +177,11 @@ def verifyEndPointAndAddToNpArrays():
     global ex
     if m != len(marketInfo) and e != len(entryPoints):
         if m != yNPArray[-1]:
-            xNPArray=np.append(xNPArray,m+1)
-            yNPArray=np.append(yNPArray,totalResult)
+            xNPArray.append(m+1)
+            yNPArray.append(totalResult)
         return
-    xNPArray=np.append(xNPArray,m+1)
-    yNPArray=np.append(yNPArray,totalResult)
+    xNPArray.append(m+1)
+    yNPArray.append(totalResult)
     findTargetVariable()
     print(d)
     ex = True
@@ -206,8 +189,8 @@ def verifyEndPointAndAddToNpArrays():
 def findTargetVariable():
     global targetVariable
     global x
-    x = np.array(xNPArray,dtype=np.int32).reshape((-1, 1))
-    y = np.array(yNPArray,dtype=np.float32)
+    x = np.array(xNPArray).reshape((-1, 1))
+    y = np.array(yNPArray)
     model = LinearRegression().fit(x,y)
     y_prediction = model.predict(x)
     residuals = y - y_prediction
@@ -237,16 +220,17 @@ def operate(slm, mbd, dn):
     m = 0 #curent market candle index
     d = dn #definition number
     ex = False
-    currentOperation = np.array([],dtype=edtype)
+    currentOperation = []
     stopPosition = 0
     firstCdPastLine = False
     cdPastLineIndex = None
     xNPArray = []
     yNPArray = []
-    xNPArray.append(np.array([totalResult],dtype=np.float32))
-    yNPArray.append(np.array([m],dtype=np.float32))
+    xNPArray.append(totalResult)
+    yNPArray.append(m)
     searchOperation()
-    if dn == 153:
-        print(x)
+    del currentOperation
+    del xNPArray
+    del yNPArray
     return targetVariable
 

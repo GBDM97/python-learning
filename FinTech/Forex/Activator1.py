@@ -8,13 +8,13 @@ X = []
 Y = []
 Z = []
 minZ = 1000
-aspectRatioDivider = 25
+aspectRatioDivider = 10
 bestOperation = []
 
 X_RANGE = [0.01,4.25]
 Y_RANGE = [0.01,4.25]
 
-DEFINITION = 1000 #insert here how many pixels of definition do you want for the 3d graph
+DEFINITION = 729 #insert here how many pixels of definition do you want for the 3d graph
 
 DEFINITION = int(math.sqrt(DEFINITION))
 for l in range(1, DEFINITION+1):
