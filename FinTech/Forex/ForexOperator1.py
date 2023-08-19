@@ -191,6 +191,8 @@ def findTargetVariable():
     global x
     x = np.array(xNPArray).reshape((-1, 1))
     y = np.array(yNPArray)
+    x = x/max(x)
+    y = y/max(y)
     model = LinearRegression().fit(x,y)
     y_prediction = model.predict(x)
     residuals = y - y_prediction
@@ -233,4 +235,38 @@ def operate(slm, mbd, dn):
     del xNPArray
     del yNPArray
     return targetVariable
+
+def operateOneTime(slm, mbd, dn):
+    global stopLossMultiplier
+    global minBreakEvenDistance
+    global currentOperation
+    global firstCdPastLine
+    global cdPastLineIndex
+    global stopPosition
+    global targetVariable
+    global totalResult
+    global xNPArray
+    global yNPArray
+    global ex
+    global d
+    global e
+    global m
+    stopLossMultiplier = slm
+    minBreakEvenDistance = mbd
+    targetVariable = 0 #total profit over residuals variance arround the regression line
+    totalResult = 0
+    e = 0 #current entry point index
+    m = 0 #curent market candle index
+    d = dn #definition number
+    ex = False
+    currentOperation = []
+    stopPosition = 0
+    firstCdPastLine = False
+    cdPastLineIndex = None
+    xNPArray = []
+    yNPArray = []
+    xNPArray.append(totalResult)
+    yNPArray.append(m)
+    searchOperation()
+    return yNPArray
 
